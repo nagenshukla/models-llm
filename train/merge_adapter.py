@@ -5,7 +5,11 @@ standalone model directory ready to register in Azure AI Foundry.
     python merge_adapter.py
 """
 
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from hf_utils import from_pretrained_cached  # noqa: E402
 
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -16,14 +20,14 @@ MERGED_DIR = Path(__file__).parent / "output" / "merged_model"
 
 
 def main():
-    base_model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, trust_remote_code=False)
+    base_model = from_pretrained_cached(AutoModelForCausalLM, BASE_MODEL, trust_remote_code=True)
     model = PeftModel.from_pretrained(base_model, str(ADAPTER_DIR))
     model = model.merge_and_unload()
 
     MERGED_DIR.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(str(MERGED_DIR))
 
-    tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=False)
+    tokenizer = from_pretrained_cached(AutoTokenizer, BASE_MODEL, trust_remote_code=True)
     tokenizer.save_pretrained(str(MERGED_DIR))
 
     print(f"Merged model saved to {MERGED_DIR}")
