@@ -1,11 +1,14 @@
 torch
-# Scripts load Phi-4-mini with trust_remote_code=False (native transformers
-# Phi3ForCausalLM implementation) to avoid version skew against the model
-# repo's bundled custom modeling file. Needs a transformers release recent
-# enough to have native Phi-4-mini/longrope rope-scaling support.
-transformers>=4.51
+# Phi-4-mini isn't in every transformers release's native model mapping, so
+# it's loaded with trust_remote_code=True (the repo's bundled modeling
+# file). hf_utils.py patches the transformers-version skew that file hits
+# (a removed/renamed `LossKwargs` symbol) rather than pinning an exact
+# transformers version here.
+transformers>=4.45
 peft>=0.13
 trl>=0.11
 bitsandbytes>=0.44
 accelerate>=1.0
 datasets
+huggingface_hub>=0.24
+hf_transfer
