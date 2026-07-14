@@ -13,7 +13,11 @@ merge_adapter.py before packaging for deployment.
 """
 
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from hf_utils import from_pretrained_cached  # noqa: E402
 
 from datasets import Dataset
 from peft import LoraConfig, get_peft_model
@@ -48,11 +52,11 @@ def main():
     train_ds = load_jsonl_as_dataset(DATA_DIR / "train.jsonl")
     eval_ds = load_jsonl_as_dataset(DATA_DIR / "test.jsonl")
 
-    # trust_remote_code=False: use transformers' own bundled Phi3ForCausalLM
-    # implementation instead of the model repo's custom modeling file, which
-    # is pinned to whatever transformers internals existed when it was
-    # uploaded and breaks against newer transformers releases.
-    tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=False)
+    # Phi-4-mini isn't in every transformers release's native model mapping,
+    # so it needs the repo's bundled remote code regardless of this flag -
+    # hf_utils patches the transformers-version skew that code hits (see
+    # _patch_loss_kwargs_compat in hf_utils.py) rather than fighting it here.
+    tokenizer = from_pretrained_cached(AutoTokenizer, BASE_MODEL, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -66,11 +70,12 @@ def main():
         bnb_4bit_use_double_quant=True,
     )
 
-    model = AutoModelForCausalLM.from_pretrained(
+    model = from_pretrained_cached(
+        AutoModelForCausalLM,
         BASE_MODEL,
         quantization_config=bnb_config,
         device_map="auto",
-        trust_remote_code=False,
+        trust_remote_code=True,
     )
 
     lora_config = LoraConfig(
