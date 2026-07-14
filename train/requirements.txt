@@ -1,0 +1,11 @@
+torch
+# Scripts load Phi-4-mini with trust_remote_code=False (native transformers
+# Phi3ForCausalLM implementation) to avoid version skew against the model
+# repo's bundled custom modeling file. Needs a transformers release recent
+# enough to have native Phi-4-mini/longrope rope-scaling support.
+transformers>=4.51
+peft>=0.13
+trl>=0.11
+bitsandbytes>=0.44
+accelerate>=1.0
+datasets
