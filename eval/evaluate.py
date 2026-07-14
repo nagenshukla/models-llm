@@ -42,12 +42,17 @@ def coverage_score(reference, candidate):
 
 
 def load_generate_fn(model_path):
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from hf_utils import from_pretrained_cached
+
     from transformers import AutoModelForCausalLM, AutoTokenizer
     import torch
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=False)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path, trust_remote_code=False, torch_dtype=torch.bfloat16, device_map="auto"
+    tokenizer = from_pretrained_cached(AutoTokenizer, model_path, trust_remote_code=True)
+    model = from_pretrained_cached(
+        AutoModelForCausalLM, model_path, trust_remote_code=True, torch_dtype=torch.bfloat16, device_map="auto"
     )
 
     def generate(system, user):
