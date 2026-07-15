@@ -17,6 +17,7 @@ import random
 from pathlib import Path
 
 from kb_bim import KB, KB_BY_ID
+from structured_facts import STRUCTURED_FACTS
 
 random.seed(42)
 
@@ -143,6 +144,25 @@ def gen_comparison_examples(entry):
     return examples
 
 
+STRUCTURED_FACT_PREFIXES = ["", "Quick check: ", "For my notes: "]
+
+
+def gen_structured_fact_examples():
+    """
+    Deliberately oversamples the exact numbered/structured facts (ISO 19650
+    parts, LOD scale, CDE states) the model was observed inventing wrong
+    specifics for. Each fact gets a few distinct-text lead-in variants
+    (not literal duplicates, so dedupe() doesn't collapse them away) to
+    give a small LoRA more exposure to the exact numbers without touching
+    the general template pipeline.
+    """
+    examples = []
+    for question, answer in STRUCTURED_FACTS:
+        for prefix in STRUCTURED_FACT_PREFIXES:
+            examples.append(make_example(prefix + question, answer))
+    return examples
+
+
 def generate_all():
     all_examples = []
     for entry in KB:
@@ -151,6 +171,7 @@ def generate_all():
         all_examples.extend(gen_persona_examples(entry))
         all_examples.extend(gen_applied_examples(entry))
         all_examples.extend(gen_comparison_examples(entry))
+    all_examples.extend(gen_structured_fact_examples())
     return all_examples
 
 
