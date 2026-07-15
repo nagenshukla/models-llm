@@ -70,6 +70,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True, help="Path or HF id of model to evaluate")
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--verbose", action="store_true", help="Print reference vs. generated text for each example")
     args = parser.parse_args()
 
     generate = load_generate_fn(args.model)
@@ -88,6 +89,9 @@ def main():
         score = coverage_score(reference, candidate)
         scores.append(score)
         print(f"[{score:.2f}] Q: {user}")
+        if args.verbose:
+            print(f"    REF: {reference}")
+            print(f"    GOT: {candidate}")
 
     avg = sum(scores) / len(scores) if scores else 0.0
     print(f"\nAverage term-coverage score over {len(scores)} examples: {avg:.3f}")
