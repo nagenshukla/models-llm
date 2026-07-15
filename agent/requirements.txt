@@ -1,0 +1,6 @@
+# Verify this package/import path against current docs before relying on
+# it - agent-framework is a young, fast-moving SDK and names may have
+# shifted since this was written. `pip index versions agent-framework` or
+# the PyPI page is the source of truth.
+agent-framework
+vllm
