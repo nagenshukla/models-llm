@@ -27,7 +27,8 @@ from transformers import (
     BitsAndBytesConfig,
     TrainingArguments,
 )
-from trl import SFTTrainer
+from trl import SFTConfig, SFTTrainer
+from transformers import EarlyStoppingCallback
 import torch
 
 BASE_MODEL = "microsoft/Phi-4-mini-instruct"
@@ -78,9 +79,12 @@ def main():
         trust_remote_code=True,
     )
 
+    # r=32 (up from 16): more capacity to hold exact numbered facts (ISO
+    # 19650 parts, LOD scale) instead of paraphrasing them wrong. alpha
+    # kept at 2x r per usual LoRA convention.
     lora_config = LoraConfig(
-        r=16,
-        lora_alpha=32,
+        r=32,
+        lora_alpha=64,
         lora_dropout=0.05,
         bias="none",
         task_type="CAUSAL_LM",
@@ -89,9 +93,9 @@ def main():
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
 
-    training_args = TrainingArguments(
+    training_args = SFTConfig(
         output_dir=str(OUTPUT_DIR),
-        num_train_epochs=3,
+        num_train_epochs=6,
         per_device_train_batch_size=2,
         gradient_accumulation_steps=8,
         learning_rate=2e-4,
@@ -100,7 +104,13 @@ def main():
         logging_steps=10,
         eval_strategy="epoch",
         save_strategy="epoch",
+        save_total_limit=3,
+        load_best_model_at_end=True,
+        metric_for_best_model="eval_loss",
+        greater_is_better=False,
         bf16=True,
+        dataset_text_field="text",
+        max_seq_length=1024,
         report_to="none",
     )
 
@@ -109,9 +119,8 @@ def main():
         args=training_args,
         train_dataset=train_ds,
         eval_dataset=eval_ds,
-        dataset_text_field="text",
-        max_seq_length=1024,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
     )
 
     trainer.train()
