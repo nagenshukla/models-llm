@@ -23,7 +23,7 @@ MERGED_DIR = Path(__file__).parent / "output" / "merged_model"
 def main():
     if (MERGED_DIR / "config.json").exists():
         print(f"Merged model already exists at {MERGED_DIR}, skipping merge.")
-    return
+        return
 
     base_model = from_pretrained_cached(AutoModelForCausalLM, BASE_MODEL, trust_remote_code=True, torch_dtype=torch.bfloat16, low_cpu_mem_usage=True)
     model = PeftModel.from_pretrained(base_model, str(ADAPTER_DIR))
@@ -32,7 +32,7 @@ def main():
     MERGED_DIR.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(str(MERGED_DIR))
 
-    tokenizer = from_pretrained_cached(AutoTokenizer, BASE_MODEL, trust_remote_code=True)
+    tokenizer = from_pretrained_cached(AutoTokenizer, BASE_MODEL)
     tokenizer.save_pretrained(str(MERGED_DIR))
 
     print(f"Merged model saved to {MERGED_DIR}")
