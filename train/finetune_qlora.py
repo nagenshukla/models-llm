@@ -53,11 +53,12 @@ def main():
     train_ds = load_jsonl_as_dataset(DATA_DIR / "train.jsonl")
     eval_ds = load_jsonl_as_dataset(DATA_DIR / "test.jsonl")
 
-    # Phi-4-mini isn't in every transformers release's native model mapping,
-    # so it needs the repo's bundled remote code regardless of this flag -
-    # hf_utils patches the transformers-version skew that code hits (see
-    # _patch_loss_kwargs_compat in hf_utils.py) rather than fighting it here.
-    tokenizer = from_pretrained_cached(AutoTokenizer, BASE_MODEL, trust_remote_code=True)
+    # config.json's auto_map points AutoTokenizer at a bare repo id
+    # ("Xenova/gpt-4o") rather than a module.ClassName reference, which
+    # crashes transformers' dynamic-module loader under trust_remote_code.
+    # Not needed anyway - tokenizer_config.json's tokenizer_class is the
+    # built-in GPT2Tokenizer, so no remote code is required to load it.
+    tokenizer = from_pretrained_cached(AutoTokenizer, BASE_MODEL)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
