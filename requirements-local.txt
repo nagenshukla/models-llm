@@ -1,0 +1,12 @@
+# For running chat_local.py / eval/evaluate.py directly on this Windows
+# machine (CPU inference) against a local model directory - no Colab, no
+# Foundry, no GPU quantization required.
+#
+# transformers/accelerate are pinned to match train/requirements.txt so the
+# model loads with the same library versions it was trained/merged with -
+# a newer transformers (e.g. 5.x) has been observed to break on this
+# model's config (AttributeError on rope_parameters handling).
+torch
+transformers==4.49.0
+accelerate==1.3.0
+hf_transfer
