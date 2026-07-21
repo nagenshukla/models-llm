@@ -28,7 +28,10 @@ SYSTEM_PROMPT = (
 
 def load(model_path):
     print(f"Loading {model_path} on CPU (this can take a few minutes)...")
-    tokenizer = from_pretrained_cached(AutoTokenizer, model_path, trust_remote_code=True)
+    # trust_remote_code omitted here: config.json's auto_map points AutoTokenizer
+    # at a bare repo id ("Xenova/gpt-4o"), which crashes transformers' dynamic-module
+    # loader. Not needed anyway - tokenizer_class is the built-in GPT2Tokenizer.
+    tokenizer = from_pretrained_cached(AutoTokenizer, model_path)
     model = from_pretrained_cached(
         AutoModelForCausalLM, model_path, trust_remote_code=True, torch_dtype=torch.float32, device_map="cpu"
     )
