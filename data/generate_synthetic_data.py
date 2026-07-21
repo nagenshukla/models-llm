@@ -32,12 +32,17 @@ DEFINITION_TEMPLATES = [
     "In BIM, what does {term} mean?",
     "Explain the term {term}.",
     "I keep seeing '{term}' in project docs — what is it?",
+    "Someone on my team mentioned {term} and I nodded along — what does it actually mean?",
+    "Can you give me a plain-English definition of {term}?",
+    "What's the textbook definition of {term}?",
 ]
 
 ACRONYM_TEMPLATES = [
     "What does {acronym} stand for?",
     "In construction, what's the full form of {acronym}?",
     "What does the acronym {acronym} mean in a BIM context?",
+    "{acronym} — what does that abbreviation expand to?",
+    "I saw '{acronym}' in a spec sheet, what's that short for?",
 ]
 
 PERSONA_TEMPLATES = [
