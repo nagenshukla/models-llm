@@ -1,0 +1,39 @@
+# Azure-managed fine-tuning job (runs on Azure's compute, not a local/Colab
+# GPU). Structure mirrors Microsoft's confirmed-working sample:
+# https://github.com/microsoft-foundry/foundry-samples/blob/main/samples/cli/finetuning/supervised/sample_finetuning_oss_supervised.yaml
+# except learning_rate_multiplier, which their sample set to 0.1 - Azure's
+# own job preprocessing warned that's too low for a 589-example dataset and
+# recommended 1, so this uses that instead of copying the sample verbatim.
+#
+# Setup (one-time):
+#   azd ext install azure.ai.finetune
+#   azd auth login
+#   azd ai finetuning init -e <your-foundry-project-endpoint>
+#
+# Submit:
+#   azd ai finetuning jobs submit -f finetune-job.yaml
+#
+# Monitor:
+#   azd ai finetuning jobs list
+#   azd ai finetuning jobs show -i <job-id>
+#
+# Deploy once it completes:
+#   azd ai finetuning jobs deploy -i <job-id> -d "bim-assistant-ministral" -c 100 -m "OpenAI" -s "GlobalStandard" -v "1"
+
+name: bim-assistant-ministral-sft
+description: BIM/digital-construction assistant, supervised fine-tune of Ministral-3B on synthetic KB-grounded data
+model: Ministral-3B
+method:
+  type: supervised
+  supervised:
+    hyperparameters:
+      epochs: 4
+      batch_size: "auto"
+      learning_rate_multiplier: 1
+      prompt_loss_weight: 0.01
+seed: 42
+suffix: "bim-sft"
+extra_body:
+  trainingType: GlobalStandard
+training_file: local:data/train.jsonl
+validation_file: local:data/test.jsonl
